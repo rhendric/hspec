@@ -82,17 +82,17 @@ reportItemDone path item = do
   format <- getFormat formatItemDone
   lift (format path item)
 
-failureItem :: Maybe Location -> Seconds -> String -> FailureReason -> Format.Item
-failureItem loc duration info err = Format.Item loc duration info (Format.Failure err)
+failureItem :: Maybe Location -> Seconds -> String -> Maybe Location -> FailureReason -> Format.Item
+failureItem loc duration info failureLoc err = Format.Item loc duration info (Format.Failure failureLoc err)
 
 reportResult :: Monad m => Path -> Maybe Location -> (Seconds, Result) -> EvalM m ()
 reportResult path loc (duration, result) = do
   case result of
     Result info status -> case status of
       Success -> reportItemDone path (Format.Item loc duration info Format.Success)
-      Pending loc_ reason -> reportItemDone path (Format.Item (loc_ <|> loc) duration info $ Format.Pending reason)
-      Failure loc_ err@(Error _ e) -> reportItemDone path (failureItem (loc_ <|> extractLocation e <|> loc) duration info err)
-      Failure loc_ err -> reportItemDone path (failureItem (loc_ <|> loc) duration info err)
+      Pending pendingLoc reason -> reportItemDone path (Format.Item loc duration info $ Format.Pending pendingLoc reason)
+      Failure failureLoc err@(Error _ e) -> reportItemDone path (failureItem (failureLoc <|> extractLocation e <|> loc) duration info failureLoc err)
+      Failure failureLoc err -> reportItemDone path (failureItem (failureLoc <|> loc) duration info failureLoc err)
 
 groupStarted :: Monad m => Path -> EvalM m ()
 groupStarted path = do

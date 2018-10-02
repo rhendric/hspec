@@ -53,11 +53,11 @@ formatterToFormat formatter config = Format {
       Success -> do
         increaseSuccessCount
         interpret $ M.exampleSucceeded formatter path duration info
-      Pending reason -> do
+      Pending _pendingLoc reason -> do
         increasePendingCount
         interpret $ M.examplePending formatter path duration info reason
-      Failure err -> do
-        addFailMessage loc path err
+      Failure failureLoc err -> do
+        addFailMessage (failureLoc <|> loc) path err
         interpret $ M.exampleFailed formatter path duration info err
 }
 

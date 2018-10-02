@@ -37,13 +37,13 @@ spec = do
       it "prints help" $ do
         help `shouldStartWith` ["Usage: my-spec [OPTION]..."]
 
-    context "with --no-color" $ do
-      it "sets configColorMode to ColorNever" $ do
-        configColorMode <$> parseOptions [] Nothing ["--no-color"] `shouldBe` Right ColorNever
-
     context "with --color" $ do
       it "sets configColorMode to ColorAlways" $ do
         configColorMode <$> parseOptions [] Nothing ["--color"] `shouldBe` Right ColorAlways
+
+    context "with --no-color" $ do
+      it "sets configColorMode to ColorNever" $ do
+        configColorMode <$> parseOptions [] Nothing ["--no-color"] `shouldBe` Right ColorNever
 
     context "with --diff" $ do
       it "sets configDiff to True" $ do
@@ -52,6 +52,17 @@ spec = do
     context "with --no-diff" $ do
       it "sets configDiff to False" $ do
         configDiff <$> parseOptions [] Nothing ["--no-diff"] `shouldBe` Right False
+
+    context "with --print-slow-specs" $ do
+      it "sets configPrintSlowSpecs to N" $ do
+        configPrintSlowSpecs <$> parseOptions [] Nothing ["--print-slow-specs=5"] `shouldBe` Right (Just 5)
+
+      it "defaults N to 10" $ do
+        configPrintSlowSpecs <$> parseOptions [] Nothing ["--print-slow-specs"] `shouldBe` Right (Just 10)
+
+      it "rejects invalid values" $ do
+        let msg = "my-spec: invalid argument `foo' for `--print-slow-specs'\nTry `my-spec --help' for more information.\n"
+        void (parseOptions [] Nothing ["--print-slow-specs=foo"]) `shouldBe` Left (ExitFailure 1, msg)
 
     context "with --out" $ do
       it "sets configOutputFile" $ do
